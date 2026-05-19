@@ -117,7 +117,6 @@ class StoneRecommenderApp:
 
         # 标记线句柄（确认后只更新这些，不重算 C_GRID）
         self._hline = None
-        self._vline_cont = None
         self._vline_rec = None
 
         self._build_widgets()
@@ -145,7 +144,7 @@ class StoneRecommenderApp:
         # 输入行右侧：强调展示推荐整数等级
         highlight = ttk.Frame(input_row)
         highlight.pack(side="left", padx=(28, 0))
-        ttk.Label(highlight, text="推荐等级 d（连续）：", font=("", 11)).pack(side="left")
+        ttk.Label(highlight, text="推荐等级 d：", font=("", 11)).pack(side="left")
         self.lbl_d_highlight = ttk.Label(
             highlight,
             text="—",
@@ -161,8 +160,7 @@ class StoneRecommenderApp:
         self.result_labels: dict[str, ttk.Label] = {}
         fields = [
             ("input_c", "输入 C (k)"),
-            ("d_rec", "推荐整数等级 d"),
-            ("p_rec", "整数档成功率 p"),
+            ("p_rec", "成功率 p"),
             ("e_rec", "E(p)=(f+C)/p (k)"),
             ("model_c", "参考 C(d) (k)"),
         ]
@@ -199,26 +197,21 @@ class StoneRecommenderApp:
 
     def _clear_markers(self) -> None:
         """移除旧的水平/竖线标记。"""
-        for artist in (self._hline, self._vline_cont, self._vline_rec):
+        for artist in (self._hline, self._vline_rec):
             if artist is not None:
                 artist.remove()
         self._hline = None
-        self._vline_cont = None
         self._vline_rec = None
 
     def _update_plot_markers(
         self,
         input_C: float,
-        d_cont: float,
         recommended_d: int,
     ) -> None:
         """只更新标记线，不重新计算 C_GRID。"""
         self._clear_markers()
         self._hline = self.ax.axhline(
             input_C, color="#dc2626", linestyle="--", linewidth=1.2, label=f"C={input_C:.4g}"
-        )
-        self._vline_cont = self.ax.axvline(
-            d_cont, color="#16a34a", linestyle=":", linewidth=1.2, label=f"d_cont={d_cont:.3f}"
         )
         self._vline_rec = self.ax.axvline(
             recommended_d,
@@ -258,13 +251,12 @@ class StoneRecommenderApp:
         e_rec = E_at_d(recommended_d, input_C)
 
         self._set_result("input_c", f"{input_C:.6f}")
-        self._set_result("d_rec", str(recommended_d))
-        self.lbl_d_highlight.config(text=f"{d_cont:.6f}")
+        self.lbl_d_highlight.config(text=str(recommended_d))
         self._set_result("p_rec", f"{p_rec:.6f}")
         self._set_result("e_rec", f"{e_rec:.6f}")
         self._set_result("model_c", f"{C_at_d(recommended_d):.6f}")
 
-        self._update_plot_markers(input_C, d_cont, recommended_d)
+        self._update_plot_markers(input_C, recommended_d)
 
 
 def main() -> None:

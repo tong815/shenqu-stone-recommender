@@ -65,15 +65,14 @@ function initChart() {
   });
 }
 
-function updateChartMarkers(input_C, d_cont, recommended_d) {
+function updateChartMarkers(input_C, recommended_d) {
   const yMin = Math.min(...C_GRID);
   const yMax = Math.max(input_C, ...C_GRID) * 1.05;
 
   chart.data.datasets = [
     curveDataset(),
     lineDataset(`输入 C=${input_C}`, D_MIN, input_C, D_MAX, input_C, "#dc2626", [6, 4]),
-    lineDataset(`d_cont=${d_cont.toFixed(3)}`, d_cont, yMin, d_cont, yMax, "#16a34a", [2, 3]),
-    lineDataset(`整数推荐 d=${recommended_d}`, recommended_d, yMin, recommended_d, yMax, "#9333ea", []),
+    lineDataset(`推荐 d=${recommended_d}`, recommended_d, yMin, recommended_d, yMax, "#9333ea", []),
   ];
   chart.options.scales.y.suggestedMax = yMax;
   chart.update();
@@ -97,14 +96,13 @@ function renderCandidateTable(candidates, recommended_d) {
 }
 
 function showResults(r) {
-  $("d-highlight").textContent = fmt6(r.d_cont);
+  $("d-highlight").textContent = String(r.recommended_d);
   $("out-input-c").textContent = fmt6(r.input_C);
-  $("out-d-rec").textContent = String(r.recommended_d);
   $("out-p-rec").textContent = fmt6(r.p_rec);
   $("out-e-rec").textContent = fmt6(r.e_rec);
   $("out-model-c").textContent = fmt6(r.model_c_rec);
   renderCandidateTable(r.candidates, r.recommended_d);
-  updateChartMarkers(r.input_C, r.d_cont, r.recommended_d);
+  updateChartMarkers(r.input_C, r.recommended_d);
 }
 
 function onCalculate() {
