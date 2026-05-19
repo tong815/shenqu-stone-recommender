@@ -6,7 +6,7 @@
 
 部署 GitHub Pages 后访问：
 
-**https://\<你的用户名\>.github.io/shenqu-stone-recommender/**
+**https://tong815.github.io/shenqu-stone-recommender/**
 
 （首次推送后需在仓库 **Settings → Pages** 中确认 Source 为 **GitHub Actions**。）
 
@@ -50,18 +50,27 @@ py calc_C.py
 └── requirements-desktop.txt
 ```
 
-## 推送到 GitHub
+## 推送到 GitHub（首次）
+
+本地仓库已初始化。请先在 GitHub 网页创建空仓库：
+
+**https://github.com/new** → 仓库名 `shenqu-stone-recommender` → Public → 不要勾选 README
+
+然后在项目目录执行：
 
 ```bash
-git init
-git add .
-git commit -m "feat: 网页版强化石等级推荐器 + GitHub Pages"
-git branch -M main
-git remote add origin https://github.com/<用户名>/shenqu-stone-recommender.git
+cd "c:\Users\chena\Desktop\神曲选强化石"
+git remote set-url origin https://github.com/tong815/shenqu-stone-recommender.git
 git push -u origin main
 ```
 
-推送后在仓库启用 **Pages → Build and deployment → GitHub Actions** 即可自动发布。
+推送完成后：
+
+1. 打开仓库 **Settings → Pages**
+2. **Build and deployment** 选 **GitHub Actions**
+3. 等待 Actions 里 `Deploy GitHub Pages` 工作流跑绿
+
+约 1–2 分钟后访问：**https://tong815.github.io/shenqu-stone-recommender/**
 
 ## License
 
