@@ -2,7 +2,7 @@
  * 强化石等级推荐器 — 网页 UI
  * 部署后请将 REPO_SLUG 改为你的「用户名/仓库名」
  */
-const REPO_SLUG = "YOUR_USERNAME/shenqu-stone-recommender";
+const REPO_SLUG = "tong815/shenqu-stone-recommender";
 
 const $ = (id) => document.getElementById(id);
 
