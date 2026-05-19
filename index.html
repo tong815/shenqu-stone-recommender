@@ -20,8 +20,9 @@
           <input id="input-c" type="text" inputmode="decimal" placeholder="例如 25" />
           <button id="btn-calc" type="button">确认</button>
           <div class="highlight">
-            <span class="highlight-label">推荐整数等级 d：</span>
+            <span class="highlight-label">推荐等级 d：</span>
             <span id="d-highlight" class="highlight-value">—</span>
+            <span class="highlight-sub">（连续解）</span>
           </div>
         </div>
       </section>
@@ -30,12 +31,28 @@
         <h2>计算结果</h2>
         <dl class="results-grid" id="results">
           <div><dt>输入 C (k)</dt><dd id="out-input-c">—</dd></div>
-          <div><dt>连续理论等级 d_cont</dt><dd id="out-d-cont">—</dd></div>
           <div><dt>推荐整数等级 d</dt><dd id="out-d-rec">—</dd></div>
-          <div><dt>推荐等级对应成功率 p</dt><dd id="out-p-rec">—</dd></div>
-          <div><dt>C(d) (k)</dt><dd id="out-c-rec">—</dd></div>
-          <div><dt>误差 C(d) − 输入 C</dt><dd id="out-error">—</dd></div>
+          <div><dt>整数档成功率 p</dt><dd id="out-p-rec">—</dd></div>
+          <div><dt>整数档期望 C(d) (k)</dt><dd id="out-c-rec">—</dd></div>
+          <div><dt>期望 − 输入 C</dt><dd id="out-error">—</dd></div>
         </dl>
+        <div class="candidate-table-wrap">
+          <p class="candidate-title">floor / ceil 候选（比期望 C(d)，取更低者）</p>
+          <table class="candidate-table">
+            <thead>
+              <tr>
+                <th>d</th>
+                <th>p</th>
+                <th>期望 C(d)</th>
+                <th>与输入差</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="candidate-tbody">
+              <tr><td colspan="5">—</td></tr>
+            </tbody>
+          </table>
+        </div>
       </section>
 
       <section class="card chart-section">

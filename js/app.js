@@ -1,6 +1,5 @@
 /**
  * 强化石等级推荐器 — 网页 UI
- * 部署后请将 REPO_SLUG 改为你的「用户名/仓库名」
  */
 const REPO_SLUG = "tong815/shenqu-stone-recommender";
 
@@ -14,7 +13,7 @@ function fmt6(n) {
 
 function curveDataset() {
   return {
-    label: "C(d)",
+    label: "C(d) 期望",
     data: D_GRID.map((d, i) => ({ x: d, y: C_GRID[i] })),
     borderColor: "#2563eb",
     backgroundColor: "rgba(37, 99, 235, 0.08)",
@@ -32,7 +31,7 @@ function lineDataset(label, x1, y1, x2, y2, color, dash) {
       { x: x2, y: y2 },
     ],
     borderColor: color,
-    borderWidth: label.startsWith("推荐") ? 2 : 1.5,
+    borderWidth: label.includes("推荐") ? 2 : 1.5,
     borderDash: dash || [],
     pointRadius: 0,
     fill: false,
@@ -43,9 +42,7 @@ function initChart() {
   const ctx = $("chart-c").getContext("2d");
   chart = new Chart(ctx, {
     type: "line",
-    data: {
-      datasets: [curveDataset()],
-    },
+    data: { datasets: [curveDataset()] },
     options: {
       responsive: true,
       maintainAspectRatio: false,
@@ -74,22 +71,40 @@ function updateChartMarkers(input_C, d_cont, recommended_d) {
 
   chart.data.datasets = [
     curveDataset(),
-    lineDataset(`C=${input_C}`, D_MIN, input_C, D_MAX, input_C, "#dc2626", [6, 4]),
+    lineDataset(`输入 C=${input_C}`, D_MIN, input_C, D_MAX, input_C, "#dc2626", [6, 4]),
     lineDataset(`d_cont=${d_cont.toFixed(3)}`, d_cont, yMin, d_cont, yMax, "#16a34a", [2, 3]),
-    lineDataset(`推荐 d=${recommended_d}`, recommended_d, yMin, recommended_d, yMax, "#9333ea", []),
+    lineDataset(`整数推荐 d=${recommended_d}`, recommended_d, yMin, recommended_d, yMax, "#9333ea", []),
   ];
   chart.options.scales.y.suggestedMax = yMax;
   chart.update();
 }
 
+function renderCandidateTable(input_C, candidates, recommended_d) {
+  const tbody = $("candidate-tbody");
+  tbody.innerHTML = candidates
+    .map((row) => {
+      const diff = row.expectation - input_C;
+      const chosen = row.d === recommended_d ? ' class="row-chosen"' : "";
+      const tag = row.tag ? ` (${row.tag})` : "";
+      return `<tr${chosen}>
+        <td>${row.d}</td>
+        <td>${fmt6(row.p)}</td>
+        <td>${fmt6(row.expectation)}</td>
+        <td>${fmt6(diff)}</td>
+        <td>${row.d === recommended_d ? "✓ 选用" : ""}${tag}</td>
+      </tr>`;
+    })
+    .join("");
+}
+
 function showResults(r) {
-  $("d-highlight").textContent = String(r.recommended_d);
+  $("d-highlight").textContent = fmt6(r.d_cont);
   $("out-input-c").textContent = fmt6(r.input_C);
-  $("out-d-cont").textContent = fmt6(r.d_cont);
   $("out-d-rec").textContent = String(r.recommended_d);
   $("out-p-rec").textContent = fmt6(r.p_rec);
   $("out-c-rec").textContent = fmt6(r.c_rec);
   $("out-error").textContent = fmt6(r.error);
+  renderCandidateTable(r.input_C, r.candidates, r.recommended_d);
   updateChartMarkers(r.input_C, r.d_cont, r.recommended_d);
 }
 
@@ -114,7 +129,6 @@ document.addEventListener("DOMContentLoaded", () => {
   if (REPO_SLUG && !REPO_SLUG.startsWith("YOUR_")) {
     $("repo-link").href = `https://github.com/${REPO_SLUG}`;
   }
-
   initChart();
   $("btn-calc").addEventListener("click", onCalculate);
   $("input-c").addEventListener("keydown", (e) => {

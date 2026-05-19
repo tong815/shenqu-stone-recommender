@@ -77,18 +77,23 @@ def _discrete_candidates(d_cont: float) -> list[int]:
     return sorted({int(min(D_MAX, max(D_MIN, x))) for x in raw})
 
 
-def recommend_discrete_d(d_cont: float, target_C: float) -> int:
+def expectation_at_d(d: float) -> float:
+    """等级 d 下的期望指标（即 C(d)）。"""
+    return C_at_d(d)
+
+
+def recommend_discrete_d(d_cont: float) -> int:
     """
-    比较 floor/ceil 候选的 |C(d) - target_C|，选误差更小者（不四舍五入）。
+    在 floor/ceil 候选中选期望 C(d) 更低者（不四舍五入、不比与输入的差值）。
     """
     candidates = _discrete_candidates(d_cont)
     best_d = candidates[0]
-    best_abs = abs(C_at_d(best_d) - target_C)
+    best_e = expectation_at_d(best_d)
     for d_int in candidates[1:]:
-        err = abs(C_at_d(d_int) - target_C)
-        if err < best_abs:
+        e = expectation_at_d(d_int)
+        if e < best_e:
             best_d = d_int
-            best_abs = err
+            best_e = e
     return best_d
 
 
@@ -130,7 +135,7 @@ class StoneRecommenderApp:
         # 输入行右侧：强调展示推荐整数等级
         highlight = ttk.Frame(input_row)
         highlight.pack(side="left", padx=(28, 0))
-        ttk.Label(highlight, text="推荐整数等级 d：", font=("", 11)).pack(side="left")
+        ttk.Label(highlight, text="推荐等级 d（连续）：", font=("", 11)).pack(side="left")
         self.lbl_d_highlight = ttk.Label(
             highlight,
             text="—",
@@ -146,11 +151,10 @@ class StoneRecommenderApp:
         self.result_labels: dict[str, ttk.Label] = {}
         fields = [
             ("input_c", "输入 C (k)"),
-            ("d_cont", "连续理论等级 d_cont"),
-            ("d_rec", "推荐整数等级 d"),
-            ("p_rec", "推荐等级对应成功率 p"),
-            ("c_rec", "C(d) (k)"),
-            ("error", "误差 C(d) - 输入 C"),
+            ("d_rec", "推荐整数等级 d（期望更低）"),
+            ("p_rec", "整数档成功率 p"),
+            ("c_rec", "整数档期望 C(d) (k)"),
+            ("error", "期望 - 输入 C"),
         ]
         for key, title in fields:
             row = ttk.Frame(result_frame)
@@ -239,15 +243,14 @@ class StoneRecommenderApp:
             )
 
         d_cont = solve_continuous_d(input_C)
-        recommended_d = recommend_discrete_d(d_cont, input_C)
+        recommended_d = recommend_discrete_d(d_cont)
         p_rec = p_from_d(recommended_d)
-        c_rec = C_at_d(recommended_d)
+        c_rec = expectation_at_d(recommended_d)
         error = c_rec - input_C
 
         self._set_result("input_c", f"{input_C:.6f}")
-        self._set_result("d_cont", f"{d_cont:.6f}")
         self._set_result("d_rec", str(recommended_d))
-        self.lbl_d_highlight.config(text=str(recommended_d))
+        self.lbl_d_highlight.config(text=f"{d_cont:.6f}")
         self._set_result("p_rec", f"{p_rec:.6f}")
         self._set_result("c_rec", f"{c_rec:.6f}")
         self._set_result("error", f"{error:.6f}")

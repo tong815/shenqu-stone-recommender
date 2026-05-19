@@ -1,8 +1,7 @@
 /**
- * 后期锚定指数模型（与桌面版 calc_C.py 一致）
- * p = (d + 1) / 10
- * f(p) = 300 * 1024^(p - 1)
- * C(d) = f(p) * (10*ln(2)*p - 1)
+ * 后期锚定指数模型
+ * C(d) 即该等级下的期望指标；连续解 d_cont 由 C(d)=输入C 反解；
+ * 整数推荐在 floor/ceil(d_cont) 中取期望 C(d) 更低者。
  */
 
 const D_MIN = 1;
@@ -10,7 +9,6 @@ const D_MAX = 9;
 const ANCHOR_COST = 300;
 const LN2_10 = 10 * Math.LN2;
 
-/** 预计算 C(d) 曲线（启动时只算一次） */
 const D_GRID = [];
 const C_GRID = [];
 for (let i = 0; i < 500; i++) {
@@ -39,7 +37,11 @@ function C_at_d(d) {
   return C(p_from_d(d));
 }
 
-/** 单调递增，二分法求 C(d) = target_C 的连续解 */
+/** 等级 d 下的期望指标（即 C(d)） */
+function expectation_at_d(d) {
+  return C_at_d(d);
+}
+
 function solve_continuous_d(target_C) {
   const cLo = C_at_d(D_MIN);
   const cHi = C_at_d(D_MAX);
@@ -67,26 +69,46 @@ function discrete_candidates(d_cont) {
     .filter((v, i, arr) => i === 0 || v !== arr[i - 1]);
 }
 
-function recommend_discrete_d(d_cont, target_C) {
+/**
+ * 在 floor/ceil 候选中选期望更低的整数等级（不四舍五入）。
+ */
+function recommend_discrete_d(d_cont) {
   const candidates = discrete_candidates(d_cont);
   let bestD = candidates[0];
-  let bestAbs = Math.abs(C_at_d(bestD) - target_C);
+  let bestE = expectation_at_d(bestD);
   for (let i = 1; i < candidates.length; i++) {
     const d = candidates[i];
-    const err = Math.abs(C_at_d(d) - target_C);
-    if (err < bestAbs) {
+    const e = expectation_at_d(d);
+    if (e < bestE) {
       bestD = d;
-      bestAbs = err;
+      bestE = e;
     }
   }
   return bestD;
 }
 
+function build_candidate_rows(d_cont) {
+  const floorD = Math.floor(d_cont);
+  const ceilD = Math.ceil(d_cont);
+  return discrete_candidates(d_cont).map((d_int) => {
+    let tag = "";
+    if (floorD === ceilD) tag = "floor=ceil";
+    else if (d_int === floorD) tag = "floor";
+    else if (d_int === ceilD) tag = "ceil";
+    return {
+      d: d_int,
+      p: p_from_d(d_int),
+      expectation: expectation_at_d(d_int),
+      tag,
+    };
+  });
+}
+
 function computeRecommendation(input_C) {
   const d_cont = solve_continuous_d(input_C);
-  const recommended_d = recommend_discrete_d(d_cont, input_C);
+  const recommended_d = recommend_discrete_d(d_cont);
   const p_rec = p_from_d(recommended_d);
-  const c_rec = C_at_d(recommended_d);
+  const c_rec = expectation_at_d(recommended_d);
   return {
     input_C,
     d_cont,
@@ -94,5 +116,6 @@ function computeRecommendation(input_C) {
     p_rec,
     c_rec,
     error: c_rec - input_C,
+    candidates: build_candidate_rows(d_cont),
   };
 }

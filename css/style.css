@@ -127,6 +127,49 @@ body {
   font-variant-numeric: tabular-nums;
 }
 
+.highlight-sub {
+  font-size: 0.8rem;
+  color: var(--muted);
+  margin-left: 0.35rem;
+}
+
+.candidate-table-wrap {
+  margin-top: 1rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--border);
+}
+
+.candidate-title {
+  margin: 0 0 0.5rem;
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+
+.candidate-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.85rem;
+  font-family: Consolas, "Courier New", monospace;
+}
+
+.candidate-table th,
+.candidate-table td {
+  padding: 0.35rem 0.5rem;
+  text-align: left;
+  border-bottom: 1px solid var(--border);
+}
+
+.candidate-table th {
+  color: var(--muted);
+  font-weight: 600;
+  font-family: inherit;
+}
+
+.candidate-table tr.row-chosen td {
+  color: var(--highlight);
+  font-weight: 600;
+}
+
 .results-grid {
   margin: 0;
   display: grid;
