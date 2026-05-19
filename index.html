@@ -33,18 +33,18 @@
           <div><dt>输入 C (k)</dt><dd id="out-input-c">—</dd></div>
           <div><dt>推荐整数等级 d</dt><dd id="out-d-rec">—</dd></div>
           <div><dt>整数档成功率 p</dt><dd id="out-p-rec">—</dd></div>
-          <div><dt>整数档期望 C(d) (k)</dt><dd id="out-c-rec">—</dd></div>
-          <div><dt>期望 − 输入 C</dt><dd id="out-error">—</dd></div>
+          <div><dt>E(p)=(f+C)/p (k)</dt><dd id="out-e-rec">—</dd></div>
+          <div><dt>参考 C(d) (k)</dt><dd id="out-model-c">—</dd></div>
         </dl>
         <div class="candidate-table-wrap">
-          <p class="candidate-title">floor / ceil 候选（比期望 C(d)，取更低者）</p>
+          <p class="candidate-title">floor / ceil 候选（比 E(p)=(f+C)/p，取更小者）</p>
           <table class="candidate-table">
             <thead>
               <tr>
                 <th>d</th>
                 <th>p</th>
-                <th>期望 C(d)</th>
-                <th>与输入差</th>
+                <th>E(p)</th>
+                <th>参考 C(d)</th>
                 <th></th>
               </tr>
             </thead>

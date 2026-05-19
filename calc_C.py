@@ -77,20 +77,30 @@ def _discrete_candidates(d_cont: float) -> list[int]:
     return sorted({int(min(D_MAX, max(D_MIN, x))) for x in raw})
 
 
-def expectation_at_d(d: float) -> float:
-    """等级 d 下的期望指标（即 C(d)）。"""
-    return C_at_d(d)
+def n(p) -> float | np.ndarray:
+    """单次强化石费用 n(p)，与 f(p) 相同。"""
+    return f(p)
 
 
-def recommend_discrete_d(d_cont: float) -> int:
+def E_success(p: float, c: float) -> float:
+    """成功升级花费期望 E(p) = (n(p) + c) / p。"""
+    return (float(n(p)) + c) / p
+
+
+def E_at_d(d: float, input_C: float) -> float:
+    return E_success(p_from_d(d), input_C)
+
+
+def recommend_discrete_d(d_cont: float, input_C: float) -> int:
     """
-    在 floor/ceil 候选中选期望 C(d) 更低者（不四舍五入、不比与输入的差值）。
+    在 floor/ceil 候选中选 E(p)=(n(p)+c)/p 更小者。
+    不比 C(d)（C(d) 随 d 单调增，会退化成退一法）。
     """
     candidates = _discrete_candidates(d_cont)
     best_d = candidates[0]
-    best_e = expectation_at_d(best_d)
+    best_e = E_at_d(best_d, input_C)
     for d_int in candidates[1:]:
-        e = expectation_at_d(d_int)
+        e = E_at_d(d_int, input_C)
         if e < best_e:
             best_d = d_int
             best_e = e
@@ -151,10 +161,10 @@ class StoneRecommenderApp:
         self.result_labels: dict[str, ttk.Label] = {}
         fields = [
             ("input_c", "输入 C (k)"),
-            ("d_rec", "推荐整数等级 d（期望更低）"),
+            ("d_rec", "推荐整数等级 d"),
             ("p_rec", "整数档成功率 p"),
-            ("c_rec", "整数档期望 C(d) (k)"),
-            ("error", "期望 - 输入 C"),
+            ("e_rec", "E(p)=(f+C)/p (k)"),
+            ("model_c", "参考 C(d) (k)"),
         ]
         for key, title in fields:
             row = ttk.Frame(result_frame)
@@ -243,17 +253,16 @@ class StoneRecommenderApp:
             )
 
         d_cont = solve_continuous_d(input_C)
-        recommended_d = recommend_discrete_d(d_cont)
+        recommended_d = recommend_discrete_d(d_cont, input_C)
         p_rec = p_from_d(recommended_d)
-        c_rec = expectation_at_d(recommended_d)
-        error = c_rec - input_C
+        e_rec = E_at_d(recommended_d, input_C)
 
         self._set_result("input_c", f"{input_C:.6f}")
         self._set_result("d_rec", str(recommended_d))
         self.lbl_d_highlight.config(text=f"{d_cont:.6f}")
         self._set_result("p_rec", f"{p_rec:.6f}")
-        self._set_result("c_rec", f"{c_rec:.6f}")
-        self._set_result("error", f"{error:.6f}")
+        self._set_result("e_rec", f"{e_rec:.6f}")
+        self._set_result("model_c", f"{C_at_d(recommended_d):.6f}")
 
         self._update_plot_markers(input_C, d_cont, recommended_d)
 

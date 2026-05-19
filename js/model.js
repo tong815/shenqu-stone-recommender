@@ -1,7 +1,8 @@
 /**
  * 后期锚定指数模型
- * C(d) 即该等级下的期望指标；连续解 d_cont 由 C(d)=输入C 反解；
- * 整数推荐在 floor/ceil(d_cont) 中取期望 C(d) 更低者。
+ * - 连续解 d_cont：由 C(d) = 输入 C 反解（C = p·f′ − f）
+ * - 整数推荐：在 floor/ceil(d_cont) 上比较成功升级花费期望
+ *   E(p) = (n(p) + c) / p，其中 n(p)=f(p) 为强化石单次费用，c 为输入的当前强化花费
  */
 
 const D_MIN = 1;
@@ -25,6 +26,11 @@ function f(p) {
   return ANCHOR_COST * Math.pow(1024, p - 1);
 }
 
+/** 单次强化石费用 n(p)，与 f(p) 相同 */
+function n(p) {
+  return f(p);
+}
+
 function f_prime(p) {
   return LN2_10 * f(p);
 }
@@ -37,9 +43,14 @@ function C_at_d(d) {
   return C(p_from_d(d));
 }
 
-/** 等级 d 下的期望指标（即 C(d)） */
-function expectation_at_d(d) {
-  return C_at_d(d);
+/** 成功升级花费期望 E(p) = (n(p) + c) / p */
+function E_success(p, c) {
+  return (n(p) + c) / p;
+}
+
+function E_at_d(d, input_C) {
+  const p = p_from_d(d);
+  return E_success(p, input_C);
 }
 
 function solve_continuous_d(target_C) {
@@ -69,16 +80,14 @@ function discrete_candidates(d_cont) {
     .filter((v, i, arr) => i === 0 || v !== arr[i - 1]);
 }
 
-/**
- * 在 floor/ceil 候选中选期望更低的整数等级（不四舍五入）。
- */
-function recommend_discrete_d(d_cont) {
+/** 在 floor/ceil 中选 E(p) 更小者（不是比 C(d)，避免退一法） */
+function recommend_discrete_d(d_cont, input_C) {
   const candidates = discrete_candidates(d_cont);
   let bestD = candidates[0];
-  let bestE = expectation_at_d(bestD);
+  let bestE = E_at_d(bestD, input_C);
   for (let i = 1; i < candidates.length; i++) {
     const d = candidates[i];
-    const e = expectation_at_d(d);
+    const e = E_at_d(d, input_C);
     if (e < bestE) {
       bestD = d;
       bestE = e;
@@ -87,7 +96,7 @@ function recommend_discrete_d(d_cont) {
   return bestD;
 }
 
-function build_candidate_rows(d_cont) {
+function build_candidate_rows(d_cont, input_C) {
   const floorD = Math.floor(d_cont);
   const ceilD = Math.ceil(d_cont);
   return discrete_candidates(d_cont).map((d_int) => {
@@ -95,10 +104,12 @@ function build_candidate_rows(d_cont) {
     if (floorD === ceilD) tag = "floor=ceil";
     else if (d_int === floorD) tag = "floor";
     else if (d_int === ceilD) tag = "ceil";
+    const p = p_from_d(d_int);
     return {
       d: d_int,
-      p: p_from_d(d_int),
-      expectation: expectation_at_d(d_int),
+      p,
+      e_success: E_at_d(d_int, input_C),
+      model_c: C_at_d(d_int),
       tag,
     };
   });
@@ -106,16 +117,16 @@ function build_candidate_rows(d_cont) {
 
 function computeRecommendation(input_C) {
   const d_cont = solve_continuous_d(input_C);
-  const recommended_d = recommend_discrete_d(d_cont);
+  const recommended_d = recommend_discrete_d(d_cont, input_C);
   const p_rec = p_from_d(recommended_d);
-  const c_rec = expectation_at_d(recommended_d);
+  const e_rec = E_at_d(recommended_d, input_C);
   return {
     input_C,
     d_cont,
     recommended_d,
     p_rec,
-    c_rec,
-    error: c_rec - input_C,
-    candidates: build_candidate_rows(d_cont),
+    e_rec,
+    model_c_rec: C_at_d(recommended_d),
+    candidates: build_candidate_rows(d_cont, input_C),
   };
 }

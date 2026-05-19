@@ -13,7 +13,7 @@ function fmt6(n) {
 
 function curveDataset() {
   return {
-    label: "C(d) 期望",
+    label: "C(d) 模型曲线",
     data: D_GRID.map((d, i) => ({ x: d, y: C_GRID[i] })),
     borderColor: "#2563eb",
     backgroundColor: "rgba(37, 99, 235, 0.08)",
@@ -79,18 +79,17 @@ function updateChartMarkers(input_C, d_cont, recommended_d) {
   chart.update();
 }
 
-function renderCandidateTable(input_C, candidates, recommended_d) {
+function renderCandidateTable(candidates, recommended_d) {
   const tbody = $("candidate-tbody");
   tbody.innerHTML = candidates
     .map((row) => {
-      const diff = row.expectation - input_C;
       const chosen = row.d === recommended_d ? ' class="row-chosen"' : "";
       const tag = row.tag ? ` (${row.tag})` : "";
       return `<tr${chosen}>
         <td>${row.d}</td>
         <td>${fmt6(row.p)}</td>
-        <td>${fmt6(row.expectation)}</td>
-        <td>${fmt6(diff)}</td>
+        <td>${fmt6(row.e_success)}</td>
+        <td>${fmt6(row.model_c)}</td>
         <td>${row.d === recommended_d ? "✓ 选用" : ""}${tag}</td>
       </tr>`;
     })
@@ -102,9 +101,9 @@ function showResults(r) {
   $("out-input-c").textContent = fmt6(r.input_C);
   $("out-d-rec").textContent = String(r.recommended_d);
   $("out-p-rec").textContent = fmt6(r.p_rec);
-  $("out-c-rec").textContent = fmt6(r.c_rec);
-  $("out-error").textContent = fmt6(r.error);
-  renderCandidateTable(r.input_C, r.candidates, r.recommended_d);
+  $("out-e-rec").textContent = fmt6(r.e_rec);
+  $("out-model-c").textContent = fmt6(r.model_c_rec);
+  renderCandidateTable(r.candidates, r.recommended_d);
   updateChartMarkers(r.input_C, r.d_cont, r.recommended_d);
 }
 
