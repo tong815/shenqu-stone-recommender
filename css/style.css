@@ -145,7 +145,8 @@ body {
   color: var(--muted);
 }
 
-.candidate-table {
+.candidate-table,
+.range-table {
   width: 100%;
   border-collapse: collapse;
   font-size: 0.85rem;
@@ -153,21 +154,29 @@ body {
 }
 
 .candidate-table th,
-.candidate-table td {
+.candidate-table td,
+.range-table th,
+.range-table td {
   padding: 0.35rem 0.5rem;
   text-align: left;
   border-bottom: 1px solid var(--border);
 }
 
-.candidate-table th {
+.candidate-table th,
+.range-table th {
   color: var(--muted);
   font-weight: 600;
   font-family: inherit;
 }
 
-.candidate-table tr.row-chosen td {
+.candidate-table tr.row-chosen td,
+.range-table tr.row-chosen td {
   color: var(--highlight);
   font-weight: 600;
+}
+
+.ranges-section {
+  overflow-x: auto;
 }
 
 .results-grid {

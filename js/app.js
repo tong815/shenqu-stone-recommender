@@ -11,6 +11,17 @@ function fmt6(n) {
   return Number(n).toFixed(6);
 }
 
+function fmtRangeValue(n) {
+  if (!Number.isFinite(n)) return "∞";
+  return Number(n).toFixed(3);
+}
+
+function fmtRangeLabel(range) {
+  if (range.d === D_MIN) return `0 ≤ C ≤ ${fmtRangeValue(range.max_C)}`;
+  if (range.d === D_MAX) return `C > ${fmtRangeValue(range.min_C)}`;
+  return `${fmtRangeValue(range.min_C)} < C ≤ ${fmtRangeValue(range.max_C)}`;
+}
+
 function curveDataset() {
   return {
     label: "C(d) 模型曲线",
@@ -95,6 +106,20 @@ function renderCandidateTable(candidates, recommended_d) {
     .join("");
 }
 
+function renderRangeTable(ranges, recommended_d) {
+  const tbody = $("range-tbody");
+  tbody.innerHTML = ranges
+    .map((range) => {
+      const chosen = range.d === recommended_d ? ' class="row-chosen"' : "";
+      return `<tr${chosen}>
+        <td>${range.d}</td>
+        <td>${fmtRangeLabel(range)} k</td>
+        <td>${fmt6(range.p)}</td>
+      </tr>`;
+    })
+    .join("");
+}
+
 function showResults(r) {
   $("d-highlight").textContent = String(r.recommended_d);
   $("out-input-c").textContent = fmt6(r.input_C);
@@ -102,6 +127,7 @@ function showResults(r) {
   $("out-e-rec").textContent = fmt6(r.e_rec);
   $("out-model-c").textContent = fmt6(r.model_c_rec);
   renderCandidateTable(r.candidates, r.recommended_d);
+  renderRangeTable(r.ranges, r.recommended_d);
   updateChartMarkers(r.input_C, r.recommended_d);
 }
 
@@ -127,6 +153,7 @@ document.addEventListener("DOMContentLoaded", () => {
     $("repo-link").href = `https://github.com/${REPO_SLUG}`;
   }
   initChart();
+  renderRangeTable(build_recommendation_ranges(), null);
   $("btn-calc").addEventListener("click", onCalculate);
   $("input-c").addEventListener("keydown", (e) => {
     if (e.key === "Enter") onCalculate();

@@ -53,6 +53,43 @@ function E_at_d(d, input_C) {
   return E_success(p, input_C);
 }
 
+function level_switch_C(lower_d) {
+  const upper_d = lower_d + 1;
+  const p_lower = p_from_d(lower_d);
+  const p_upper = p_from_d(upper_d);
+  const f_lower = n(p_lower);
+  const f_upper = n(p_upper);
+  return (p_lower * f_upper - p_upper * f_lower) / (p_upper - p_lower);
+}
+
+function build_recommendation_ranges() {
+  const ranges = [];
+  let min_C = 0;
+
+  for (let d = D_MIN; d <= D_MAX; d++) {
+    const max_C = d < D_MAX ? level_switch_C(d) : Infinity;
+    ranges.push({
+      d,
+      p: p_from_d(d),
+      min_C,
+      max_C,
+      model_c: C_at_d(d),
+    });
+    min_C = max_C;
+  }
+
+  return ranges;
+}
+
+function find_recommendation_range(input_C, recommended_d) {
+  return build_recommendation_ranges().find((range) => {
+    if (range.d !== recommended_d) return false;
+    if (range.d === D_MIN) return input_C <= range.max_C;
+    if (range.d === D_MAX) return input_C > range.min_C;
+    return input_C > range.min_C && input_C <= range.max_C;
+  });
+}
+
 function solve_continuous_d(target_C) {
   const cLo = C_at_d(D_MIN);
   const cHi = C_at_d(D_MAX);
@@ -120,6 +157,7 @@ function computeRecommendation(input_C) {
   const recommended_d = recommend_discrete_d(d_cont, input_C);
   const p_rec = p_from_d(recommended_d);
   const e_rec = E_at_d(recommended_d, input_C);
+  const ranges = build_recommendation_ranges();
   return {
     input_C,
     d_cont,
@@ -128,5 +166,7 @@ function computeRecommendation(input_C) {
     e_rec,
     model_c_rec: C_at_d(recommended_d),
     candidates: build_candidate_rows(d_cont, input_C),
+    ranges,
+    current_range: find_recommendation_range(input_C, recommended_d),
   };
 }
