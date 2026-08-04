@@ -7,16 +7,30 @@
 
 const D_MIN = 1;
 const D_MAX = 9;
-const ANCHOR_COST = 300;
+const ANCHOR_PRE = 300;
+const ANCHOR_POST = 96000;
+let ANCHOR_COST = ANCHOR_PRE;
 const LN2_10 = 10 * Math.LN2;
 
 const D_GRID = [];
 const C_GRID = [];
-for (let i = 0; i < 500; i++) {
-  const d = D_MIN + ((D_MAX - D_MIN) * i) / (500 - 1);
-  D_GRID.push(d);
-  C_GRID.push(C_at_d(d));
+
+function rebuildGrids() {
+  D_GRID.length = 0;
+  C_GRID.length = 0;
+  for (let i = 0; i < 500; i++) {
+    const d = D_MIN + ((D_MAX - D_MIN) * i) / (500 - 1);
+    D_GRID.push(d);
+    C_GRID.push(C_at_d(d));
+  }
 }
+
+function setAnchorCost(cost) {
+  ANCHOR_COST = cost;
+  rebuildGrids();
+}
+
+rebuildGrids();
 
 function p_from_d(d) {
   return (d + 1) / 10;

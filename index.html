@@ -11,6 +11,14 @@
       <header class="header">
         <h1>强化石等级推荐器</h1>
         <p class="subtitle">后期锚定指数模型 · 根据当前强化花费 C（k）推荐强化石等级</p>
+        <div class="mode-switch" role="group" aria-label="进阶阶段">
+          <button type="button" id="mode-pre" class="mode-btn active" data-anchor="300">
+            进阶前（锚定 300）
+          </button>
+          <button type="button" id="mode-post" class="mode-btn" data-anchor="96000">
+            进阶后（锚定 96000）
+          </button>
+        </div>
       </header>
 
       <section class="card input-section">
@@ -78,7 +86,7 @@
       </section>
 
       <footer class="footer">
-        <p>模型：f(p)=300×1024<sup>p−1</sup>，C(d)=p·f′(p)−f(p)，d∈[1,9]</p>
+        <p>模型：f(p)=<span id="footer-anchor">300</span>×1024<sup>p−1</sup>，C(d)=p·f′(p)−f(p)，d∈[1,9]</p>
         <p>
           <a href="https://github.com/tong815/shenqu-stone-recommender" id="repo-link" target="_blank" rel="noopener">GitHub 仓库</a>
           · 桌面版：<code>python calc_C.py</code>

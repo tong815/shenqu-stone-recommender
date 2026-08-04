@@ -89,6 +89,12 @@ function updateChartMarkers(input_C, recommended_d) {
   chart.update();
 }
 
+function resetChartCurve() {
+  chart.data.datasets = [curveDataset()];
+  chart.options.scales.y.suggestedMax = undefined;
+  chart.update();
+}
+
 function renderCandidateTable(candidates, recommended_d) {
   const tbody = $("candidate-tbody");
   tbody.innerHTML = candidates
@@ -131,6 +137,15 @@ function showResults(r) {
   updateChartMarkers(r.input_C, r.recommended_d);
 }
 
+function clearResults() {
+  $("d-highlight").textContent = "—";
+  $("out-input-c").textContent = "—";
+  $("out-p-rec").textContent = "—";
+  $("out-e-rec").textContent = "—";
+  $("out-model-c").textContent = "—";
+  $("candidate-tbody").innerHTML = '<tr><td colspan="5">—</td></tr>';
+}
+
 function onCalculate() {
   const raw = $("input-c").value.trim();
   if (!raw) {
@@ -148,6 +163,25 @@ function onCalculate() {
   showResults(computeRecommendation(input_C));
 }
 
+function setMode(anchor) {
+  const cost = Number(anchor);
+  setAnchorCost(cost);
+
+  $("mode-pre").classList.toggle("active", cost === ANCHOR_PRE);
+  $("mode-post").classList.toggle("active", cost === ANCHOR_POST);
+  $("footer-anchor").textContent = String(cost);
+
+  const raw = $("input-c").value.trim();
+  const input_C = Number(raw);
+  if (raw && Number.isFinite(input_C)) {
+    showResults(computeRecommendation(input_C));
+  } else {
+    clearResults();
+    renderRangeTable(build_recommendation_ranges(), null);
+    resetChartCurve();
+  }
+}
+
 document.addEventListener("DOMContentLoaded", () => {
   if (REPO_SLUG && !REPO_SLUG.startsWith("YOUR_")) {
     $("repo-link").href = `https://github.com/${REPO_SLUG}`;
@@ -158,4 +192,6 @@ document.addEventListener("DOMContentLoaded", () => {
   $("input-c").addEventListener("keydown", (e) => {
     if (e.key === "Enter") onCalculate();
   });
+  $("mode-pre").addEventListener("click", () => setMode(ANCHOR_PRE));
+  $("mode-post").addEventListener("click", () => setMode(ANCHOR_POST));
 });
